@@ -2,6 +2,7 @@ version: "1.0"
 
 volumes:
   certs:
+  db:
 
 services:
   ssl-certificate-generator:
@@ -12,6 +13,7 @@ services:
       - certs:/certs
     # openssl command called automatically, only need to define the arguments
     command: req -x509 -nodes -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 -subj '/CN=localhost'
+
   router:
     image: nginx:alpine
     container_name: router-dev
@@ -39,53 +41,22 @@ services:
     environment:
       PORT: ${BE_PORT}
       HOST: ${BE_HOST}
-      # MYSQL_HOSTNAME: database
-      # MYSQL_DATABASE: ${DB_DATABASE}
-      # MYSQL_USERNAME: ${DB_USERNAME}
-      # MYSQL_PASSWORD: ${DB_PASSWORD}
-      # MYSQL_PORT: ${DB_PORT}
-      # OUR_URL: ${URL}
       TZ: ${TZ}
     volumes:
       - ./backend:/backend
-    # links:
-    #   - database
-    # depends_on:
-    #   - database
+      - db:/database
+    depends_on:
+      database-prep:
+        condition: service_completed_successfully
 
-  # database-prep:
-  #   container_name: database-prep
-  #   image: alpine:latest
-  #   working_dir: /database
-  #   volumes:
-  #     - ./database:/database
-  #   command: db_schema.sql db_test_data.sql
-  #   entrypoint:
-  #     - /bin/sh
-  #     - /database/merge.sh
-  #   environment:
-  #     TZ: ${TZ}
-  #   networks:
-  #     - backend-network
+  database-prep:
+    container_name: database-prep
+    image: oven/bun
+    working_dir: /database
+    volumes:
+      - ./database:/database
+      - db:/generated
+    command: bun index.ts
+    environment:
+      TZ: ${TZ}
 
-  # database:
-  #   container_name: database-dev
-  #   image: mysql:latest
-  #   ports:
-  #     - "${DB_PORT}:${DB_PORT}"
-  #   environment:
-  #     MYSQL_DATABASE: ${DB_DATABASE}
-  #     MYSQL_USER: ${DB_USERNAME}
-  #     MYSQL_PASSWORD: ${DB_PASSWORD}
-  #     MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-  #     MYSQL_ROOT_HOST: ${DB_ROOT_HOST}
-  #     TZ: ${TZ}
-  #   volumes:
-  #     - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-  #   command: --default-authentication-plugin=mysql_native_password
-  #   restart: always
-  #   depends_on:
-  #     database-prep:
-  #       condition: service_completed_successfully
-  #   networks:
-  #     - backend-network
