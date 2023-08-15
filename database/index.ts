@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS stop(
   name CHAR(100) NULL,
 	UNIQUE(name)
 )`);
-console.log("Created stop table");
 
 db.run(`
 CREATE TABLE IF NOT EXISTS route(
@@ -45,7 +44,6 @@ CREATE TABLE IF NOT EXISTS route(
 	name CHAR(100) NULL,
 	UNIQUE(name)
 )`);
-console.log("Created routes table");
 
 db.run(`
 CREATE TABLE IF NOT EXISTS route_stop(
@@ -57,7 +55,6 @@ CREATE TABLE IF NOT EXISTS route_stop(
 	FOREIGN KEY(stop_id) REFERENCES stop(id)
 )
 `);
-console.log("Created route_stop table");
 
 // Generate stops
 const selected_stops = new Set<string>();
