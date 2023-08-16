@@ -19,15 +19,6 @@ export const getAllStopsFromDatabase = () =>
     .all()
     .map(({ name }) => name, []) as string[];
 
-/**
- *
- * @returns A list of all route names in the database
- */
-export const getAllRoutes = () =>
-  db
-    .query("SELECT name FROM route")
-    .all()
-    .map(({ name }) => name, []) as string[];
 
 /**
  *
