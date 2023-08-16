@@ -14,14 +14,20 @@ const db = new Database("/database/db.sqlite");
  * @returns A list of all stop names in the database
  */
 export const getAllStopsFromDatabase = () =>
-  db.query("SELECT name FROM stop").all() as string[];
+  db
+    .query("SELECT name FROM stop")
+    .all()
+    .map(({ name }) => name, []) as string[];
 
 /**
  *
  * @returns A list of all route names in the database
  */
 export const getAllRoutes = () =>
-  db.query("SELECT name FROM route").all() as string[];
+  db
+    .query("SELECT name FROM route")
+    .all()
+    .map(({ name }) => name, []) as string[];
 
 /**
  *
@@ -64,18 +70,20 @@ export const getAllPossibleDestinations = ($start) => {
 	`);
   const query = db.transaction((paths) =>
     Object.fromEntries(
-      paths.map(
-        ({ sort_order, route_id, name }) => [
-          name,
-          getPossibleDestinations
-            .all({
-              $sort_order: sort_order,
-              $route_id: route_id,
-            })
-            .map(({ name }) => name, []),
-        ],
-        {}
-      )
+      paths
+        .map(
+          ({ sort_order, route_id, name }) => [
+            name,
+            getPossibleDestinations
+              .all({
+                $sort_order: sort_order,
+                $route_id: route_id,
+              })
+              .map(({ name }) => name, []),
+          ],
+          {}
+        )
+        .filter(([_, stops]) => stops.length, [])
     )
   );
   return query(paths) as { [key: string]: Array<string> };
