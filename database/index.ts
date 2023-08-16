@@ -6,7 +6,7 @@ type Routes = { [key: string]: Array<string> };
 
 /**
  * These should really be in an independent util/helpers
- * or integrated into object types in a larger project
+ * or integrated into custom objects in a larger project
  */
 const randomIntInRange = (max: number, min = 0) =>
   Math.floor(Math.random() * (max - min) + min);
@@ -21,8 +21,12 @@ const shuffleArray = (array: Array<unknown>) => {
 const db = new Database("/generated/db.sqlite");
 
 /**
- * For this much sql you should really use an actual .sql file
- * but for a small test task this is fine
+ * Normally I would use a db_schema.sql and db_dummy_data.sql files for
+ * actual SQL databases, and then use a database-preparation docker service
+ * based on the current environment or docker profile
+ *
+ * But since we're using SQLite and it's a small test exercise I believe it's
+ * fine to build and seed it in a single non-sql file/service.
  */
 
 db.run(`
@@ -56,7 +60,7 @@ CREATE TABLE IF NOT EXISTS route_stop(
 )
 `);
 
-// Generate stops
+// Select random stops
 const selected_stops = new Set<string>();
 while (selected_stops.size < 100) {
   selected_stops.add(names[randomIntInRange(names.length)]);
@@ -108,3 +112,8 @@ const insertRouteStops = db.transaction((routes) => {
 insertStops(selected_stops);
 insertRoutes(Object.keys(routes));
 insertRouteStops(routes);
+
+/**
+ * Could have easily merged insertRoute and insertRouteStop into a single
+ * transaction, but I believe this gives better readability and modularity
+ */
