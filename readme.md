@@ -12,6 +12,7 @@ Imagine the following routes:
 - Tartu-Tallinn with the same stops in reverse order
 
 If a person is at Saue stop then they can only travel to stops on Tallinn-Haapsalu or Haapsalu-Tallinn routes which come after Saue stop in the direction of the route (in case of Tallinn-Haapsalu route, they can travel to Keila, but not Tallinn).
+
 ## Tasks
 
 Create an application with the following features.
@@ -26,6 +27,24 @@ Create an application with the following features.
 ---
 
 # Solution
+
+## Solution choices
+
+- For the backend runtime [bun.js](https://bun.sh/) was chosen due to it's significantly higher performance compared to other javascript runtimes as well as it's ability to run typescript natively
+- For database the [SQLite](https://www.sqlite.org/index.html) was chosen due to the chosen backend runtime having decent builtin SQLite hooks as well as the database schema being quite simple and not needing any complex features
+- For serving the API [NGINX](https://www.nginx.com/) was used due to the authors preferences and previous experience, meaning previous config templates could be used
+- For hosting and managing different services [docker](https://www.docker.com/) was used due to the same reasons as NGINX
+- For seeding the test database [bun.js](https://bun.sh/) was again used to keep the codebase as unified as possible (also I couldn't get the `php artisan` command to function inside docker container :D)
+
+#### Possible improvements
+
+- To take this API live, a couple of new services should be added:
+  - certbot - to get actually trusted CA signed certificates
+  - database backup service
+- Add tests
+- Add proper error handling and other middleware to backend
+- Reconfigure docker and nginx to enable horizontal scaling
+- Set up proper git workflow/branching schema
 
 ## Setting up the dev environment
 
@@ -124,3 +143,66 @@ docker compose down
 - For `curl` it can be done by enabling the `-k/--insecure` flag [(Docs)](https://curl.se/docs/manpage.html#-k)
 - For `Insomnia` it can be done by disabling `Validate certificates` in the settings [(Docs)](https://docs.insomnia.rest/insomnia/ssl-validation)
 - For `Postman` it can be done by disabling `Enable SSL certificate verification` in the settings [(Docs)](https://learning.postman.com/docs/sending-requests/certificates/#troubleshooting-certificate-errors)
+
+## Endpoints
+
+_Normally there would be another markdown file or some other way (swagger.io or something similar) to display possible endpoints, but since there are only two I'll just add them right here manually_
+
+### [GET]() /stops
+
+#### Request:
+
+This request requires no special headers
+
+#### Response:
+
+##### `200` Successful response
+
+Returns a json array of every stop in the database
+
+### [POST]() /stops
+
+#### Request:
+
+Requires a json object containing the starting stop
+
+```json
+{
+	"from":[stop name]
+}
+```
+
+#### Response:
+
+##### `200` Successful response
+
+Returns a json object containing all routes you can take from the starting stop and all the stops you can go to on that route
+
+```json
+{
+	"route1": ["stop1", "stop2", "stop3"],
+	"route2": ["stop4"],
+	...
+}
+```
+
+#### Example
+
+```json
+// Request
+{
+  "from": "Tootsi"
+}
+```
+
+```json
+// Response
+{
+  "Kiisa to Kohila": ["Võõpsu", "Lohusuu", "Kohila"],
+  "Kohila to Kiisa": ["Kiisa"],
+  "Lihula to Vastseliina": ["Kiisa", "Põlva", "Võsu", "Nasva", "Vastseliina"],
+  "Vastseliina to Lihula": ["Ravila", "Tapa", "Lihula"],
+  "Käru to Kohila": ["Kohila"],
+  "Kohila to Käru": ["Sangaste", "Käravete", "Suure-Jaani", "Kamari", "Käru"]
+}
+```
