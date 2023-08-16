@@ -52,7 +52,7 @@ Create an application with the following features.
 
 ### Install docker:
 
-[The following guide is based on this articles from DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04)
+[The following guide is based on this article from DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04)
 
 1. Update the system
 
